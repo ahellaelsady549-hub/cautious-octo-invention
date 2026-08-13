@@ -56,6 +56,7 @@ function QuranPage() {
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [continuous, setContinuous] = useState(true);
   const [ward, setWard] = useState<Ward>(loadWard);
+  const [showSurahList, setShowSurahList] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: list } = useQuery({ queryKey: ["surahs"], queryFn: fetchSurahList, staleTime: Infinity });
@@ -196,42 +197,65 @@ function QuranPage() {
         )}
       </div>
 
-      <div className="mt-6 grid gap-5 lg:grid-cols-[300px_1fr]">
-        {/* Surah list */}
-        <aside className="surface h-fit p-4 lg:sticky lg:top-20">
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="ابحث عن سورة..."
-              className="w-full rounded-xl border border-border bg-background py-2.5 pr-9 pl-3 text-sm outline-none focus:border-gold"
-            />
-          </div>
-          <div className="mt-3 max-h-[420px] space-y-1 overflow-y-auto pl-1">
-            {filtered.map((s) => (
-              <button
-                key={s.number}
-                onClick={() => {
-                  setSurahNo(s.number);
-                  stop();
-                }}
-                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-right text-sm transition-colors ${
-                  s.number === surahNo ? "bg-secondary text-gold" : "hover:bg-secondary/60"
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-[11px]">
-                    {s.number}
-                  </span>
-                  {s.name}
-                </span>
-                <span className="text-xs text-muted-foreground">{s.numberOfAyahs}</span>
-              </button>
-            ))}
-          </div>
-        </aside>
+      <div className="mt-6">
+        <button
+          onClick={() => setShowSurahList(!showSurahList)}
+          className="mb-3 flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-sm font-medium transition-colors hover:bg-secondary"
+        >
+          <span>{showSurahList ? "إخفاء قائمة السور" : "إظهار قائمة السور"}</span>
 
+          <span className="text-muted-foreground">
+            {showSurahList ? "▲" : "▼"}
+          </span>
+        </button>
+
+        {showSurahList && (
+          <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
+            {/* Surah list */}
+            <aside className="surface h-fit p-4 lg:sticky lg:top-20">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="ابحث عن سورة..."
+                  className="w-full rounded-xl border border-border bg-background py-2.5 pr-9 pl-3 text-sm outline-none focus:border-gold"
+                />
+              </div>
+
+              <div className="mt-3 max-h-[420px] space-y-1 overflow-y-auto pl-1">
+                {filtered.map((s) => (
+                  <button
+                    key={s.number}
+                    onClick={() => {
+                      setSurahNo(s.number);
+                      stop();
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-right text-sm transition-colors ${
+                      s.number === surahNo
+                        ? "bg-secondary text-gold"
+                        : "hover:bg-secondary/60"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-muted text-[11px]">
+                        {s.number}
+                      </span>
+
+                      {s.name}
+                    </span>
+
+                    <span className="text-xs text-muted-foreground">
+                      {s.numberOfAyahs}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </aside>
+          </div>
+        )}
+      </div>
         {/* Reader */}
         <section className="surface p-5 sm:p-8">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
@@ -328,10 +352,9 @@ function QuranPage() {
             ))}
           </div>
         </section>
-      </div>
 
-      <RuqyahPlayer />
-    </div>
+        <RuqyahPlayer />
+      </div>
   );
 }
 
