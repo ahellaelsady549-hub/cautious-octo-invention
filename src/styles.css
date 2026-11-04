@@ -27,6 +27,10 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-mushaf-paper: var(--mushaf-paper);
+  --color-mushaf-ink: var(--mushaf-ink);
+  --color-mushaf-accent: var(--mushaf-accent);
+  --color-mushaf-highlight: var(--mushaf-highlight);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
@@ -60,6 +64,10 @@
   --border: oklch(0.9 0.012 140);
   --input: oklch(0.9 0.012 140);
   --ring: oklch(0.68 0.12 82);
+  --mushaf-paper: oklch(0.975 0.022 88);
+  --mushaf-ink: oklch(0.2 0.02 60);
+  --mushaf-accent: oklch(0.5 0.08 200);
+  --mushaf-highlight: oklch(0.9 0.06 90);
 
   --gradient-hero: linear-gradient(
     135deg,
@@ -94,6 +102,10 @@
   --border: oklch(0.32 0.025 165);
   --input: oklch(0.32 0.025 165);
   --ring: oklch(0.8 0.115 86);
+  --mushaf-paper: oklch(0.2 0.015 80);
+  --mushaf-ink: oklch(0.93 0.02 90);
+  --mushaf-accent: oklch(0.78 0.1 86);
+  --mushaf-highlight: oklch(0.35 0.05 86);
 
   --gradient-hero: linear-gradient(
     135deg,
@@ -214,6 +226,24 @@
   animation: pulse-ring 2s infinite;
 }
 
+/* تقليب صفحات المصحف: الصفحة التالية تُقلب من اليسار كما في المصحف */
+@keyframes page-next {
+  from { transform: rotateY(-75deg); opacity: 0.2; box-shadow: 30px 0 40px -20px oklch(0 0 0 / 0.5); }
+  to { transform: rotateY(0); opacity: 1; }
+}
+@keyframes page-prev {
+  from { transform: rotateY(75deg); opacity: 0.2; box-shadow: -30px 0 40px -20px oklch(0 0 0 / 0.5); }
+  to { transform: rotateY(0); opacity: 1; }
+}
+@utility animate-page-next {
+  transform-origin: right center;
+  animation: page-next 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@utility animate-page-prev {
+  transform-origin: left center;
+  animation: page-prev 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .markdown-answer p {
   margin-bottom: 0.75rem;
 }
@@ -247,4 +277,61 @@
   border-right: 2px solid var(--gold);
   padding-right: 0.75rem;
   color: var(--muted-foreground);
+}
+
+/* ------------- صفحة المصحف ------------- */
+@utility mushaf-paper {
+  background-color: var(--mushaf-paper);
+  box-shadow: var(--shadow-soft), inset 0 0 60px color-mix(in oklab, var(--mushaf-accent) 8%, transparent);
+  border: 1px solid color-mix(in oklab, var(--mushaf-accent) 35%, transparent);
+}
+.mushaf-texture {
+  opacity: 0.42;
+  mix-blend-mode: multiply;
+}
+.dark .mushaf-texture {
+  opacity: 0.1;
+  mix-blend-mode: soft-light;
+}
+.mushaf-script {
+  font-family: var(--font-quran);
+  font-weight: 400;
+  font-synthesis: none;
+  line-height: 2.65;
+  letter-spacing: 0;
+  word-spacing: normal;
+  overflow-wrap: normal;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-next, .animate-page-prev {
+    animation: none;
+  }
+}
+@utility mushaf-frame {
+  border: 3px double color-mix(in oklab, var(--mushaf-accent) 55%, transparent);
+  border-radius: 4px;
+  outline: 1px solid color-mix(in oklab, var(--mushaf-accent) 25%, transparent);
+  outline-offset: 3px;
+}
+@utility surah-banner {
+  color: var(--mushaf-accent);
+  border: 2px solid color-mix(in oklab, var(--mushaf-accent) 60%, transparent);
+  border-radius: 6px;
+  background-image:
+    radial-gradient(circle at 0 50%, color-mix(in oklab, var(--mushaf-accent) 25%, transparent) 6px, transparent 7px),
+    radial-gradient(circle at 100% 50%, color-mix(in oklab, var(--mushaf-accent) 25%, transparent) 6px, transparent 7px),
+    linear-gradient(90deg, color-mix(in oklab, var(--mushaf-accent) 10%, transparent), color-mix(in oklab, var(--mushaf-accent) 18%, transparent), color-mix(in oklab, var(--mushaf-accent) 10%, transparent));
+}
+@utility ayah-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  height: 1.6em;
+  font-size: 0.55em;
+  color: var(--mushaf-accent);
+  border: 1.5px solid var(--mushaf-accent);
+  border-radius: 9999px;
+  vertical-align: middle;
+  font-family: var(--font-body);
 }
