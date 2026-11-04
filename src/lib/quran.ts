@@ -1,4 +1,13 @@
-export type Reciter = { id: string; name: string; folder: string; download?: string };
+export type Reciter = {
+  id: string;
+  name: string;
+  /** مجلد everyayah بجودة عالية */
+  folder: string;
+  /** مجلد بجودة أخف للاتصال الضعيف */
+  folderLow?: string;
+  /** سيرفر تحميل السورة كاملة */
+  download?: string;
+};
 
 export const reciters: Reciter[] = [
   {
@@ -11,11 +20,14 @@ export const reciters: Reciter[] = [
     id: "minshawi-mujawwad",
     name: "الشيخ المنشاوي (المصحف المجوّد)",
     folder: "Minshawy_Mujawwad_192kbps",
+    folderLow: "Minshawy_Mujawwad_64kbps",
+    download: "https://server10.mp3quran.net/minsh/Almusshaf-Al-Mojawwad/",
   },
   {
     id: "husary",
     name: "الشيخ محمود خليل الحصري",
     folder: "Husary_128kbps",
+    folderLow: "Husary_64kbps",
     download: "https://server13.mp3quran.net/husr/",
   },
   {
@@ -28,17 +40,39 @@ export const reciters: Reciter[] = [
     id: "abdulbasit",
     name: "الشيخ عبد الباسط عبد الصمد",
     folder: "Abdul_Basit_Murattal_192kbps",
+    folderLow: "Abdul_Basit_Murattal_64kbps",
     download: "https://server7.mp3quran.net/basit/",
+  },
+  {
+    id: "afasy",
+    name: "الشيخ مشاري راشد العفاسي",
+    folder: "Alafasy_128kbps",
+    folderLow: "Alafasy_64kbps",
+    download: "https://server8.mp3quran.net/afs/",
+  },
+  {
+    id: "yasser",
+    name: "الشيخ ياسر الدوسري",
+    folder: "Yasser_Ad-Dussary_128kbps",
+    download: "https://server11.mp3quran.net/yasser/",
   },
 ];
 
+export type Quality = "high" | "low";
+
+/** مجلد التلاوة حسب جودة الاستماع المختارة */
+export function reciterFolder(folder: string, quality: Quality): string {
+  const r = reciters.find((x) => x.folder === folder);
+  if (!r) return folder;
+  return quality === "low" ? (r.folderLow ?? r.folder) : r.folder;
+}
+
 /** رابط تحميل السورة كاملة بصوت القارئ */
-export function surahDownloadUrl(reciterFolder: string, surah: number): string | null {
-  const r = reciters.find((x) => x.folder === reciterFolder);
+export function surahDownloadUrl(reciterFolderId: string, surah: number): string | null {
+  const r = reciters.find((x) => x.folder === reciterFolderId);
   if (!r?.download) return null;
   return `${r.download}${String(surah).padStart(3, "0")}.mp3`;
 }
-
 
 export type SurahMeta = {
   number: number;
@@ -48,7 +82,7 @@ export type SurahMeta = {
   revelationType: string;
 };
 
-export type Ayah = { number: number; numberInSurah: number; text: string };
+export type Ayah = { number: number; numberInSurah: number; text: string; page?: number; juz?: number };
 
 export async function fetchSurahList(): Promise<SurahMeta[]> {
   const res = await fetch("https://api.alquran.cloud/v1/surah");
@@ -70,12 +104,131 @@ export async function fetchSurah(n: number): Promise<{ meta: SurahMeta; ayahs: A
       numberOfAyahs: d.numberOfAyahs,
       revelationType: d.revelationType,
     },
-    ayahs: d.ayahs.map((a: { number: number; numberInSurah: number; text: string }) => ({
+    ayahs: d.ayahs.map((a: { number: number; numberInSurah: number; text: string; page: number; juz: number }) => ({
       number: a.number,
       numberInSurah: a.numberInSurah,
       text: a.text,
+      page: a.page,
+      juz: a.juz,
     })),
   };
+}
+
+/* ------------------------- التفسير الميسّر ------------------------- */
+
+export async function fetchTafsir(surah: number): Promise<Record<number, string>> {
+  const res = await fetch(`https://api.alquran.cloud/v1/surah/${surah}/ar.muyassar`);
+  if (!res.ok) throw new Error("تعذّر تحميل التفسير");
+  const json = await res.json();
+  const out: Record<number, string> = {};
+  for (const a of json.data.ayahs as { numberInSurah: number; text: string }[]) out[a.numberInSurah] = a.text;
+  return out;
+}
+
+/* ------------------------- الصفحات والأجزاء والأحزاب ------------------------- */
+
+export type PageAyah = {
+  number: number;
+  numberInSurah: number;
+  text: string;
+  surahNumber: number;
+  surahName: string;
+  juz?: number | undefined;
+};
+
+type ApiPageAyah = {
+  number: number;
+  numberInSurah: number;
+  text: string;
+  juz?: number;
+  surah: { number: number; name: string };
+};
+
+async function fetchRange(path: string, label: string): Promise<PageAyah[]> {
+  const res = await fetch(`https://api.alquran.cloud/v1/${path}/quran-uthmani`);
+  if (!res.ok) throw new Error(`تعذّر تحميل ${label}`);
+  const json = await res.json();
+  return (json.data.ayahs as ApiPageAyah[]).map((a) => ({
+    number: a.number,
+    numberInSurah: a.numberInSurah,
+    text: a.text,
+    surahNumber: a.surah.number,
+    surahName: a.surah.name,
+    juz: a.juz,
+  }));
+}
+
+export const fetchPage = (n: number) => fetchRange(`page/${n}`, "الصفحة");
+export const fetchJuz = (n: number) => fetchRange(`juz/${n}`, "الجزء");
+/** الحزب مكوَّن من 4 أرباع في تقسيم hizbQuarter (1..240) */
+export async function fetchHizb(n: number): Promise<PageAyah[]> {
+  const quarters = [4 * n - 3, 4 * n - 2, 4 * n - 1, 4 * n];
+  const parts = await Promise.all(quarters.map((q) => fetchRange(`hizbQuarter/${q}`, "الحزب")));
+  return parts.flat();
+}
+
+export const TOTAL_PAGES = 604;
+export const TOTAL_JUZ = 30;
+export const TOTAL_HIZB = 60;
+
+/* ------------------------- البحث عن آية ------------------------- */
+
+export type SearchHit = {
+  key: string;
+  text: string;
+  surahNumber: number;
+  surahName: string;
+  numberInSurah: number;
+};
+
+/** تجريد التشكيل وتوحيد الهمزات للبحث المرن */
+export function normalizeArabic(s: string) {
+  return s
+    .replace(/[\u064B-\u0652\u0670\u0640\u06D6-\u06ED]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+type IndexEntry = SearchHit & { norm: string };
+let quranIndex: IndexEntry[] | null = null;
+
+/** يُحمَّل نص المصحف كاملًا مرة واحدة ثم يُبحث فيه محليًا */
+export async function loadQuranIndex(): Promise<IndexEntry[]> {
+  if (quranIndex) return quranIndex;
+  const res = await fetch("https://api.alquran.cloud/v1/quran/quran-uthmani");
+  if (!res.ok) throw new Error("تعذّر تحميل نص المصحف للبحث");
+  const json = await res.json();
+  const out: IndexEntry[] = [];
+  for (const s of json.data.surahs as {
+    number: number;
+    name: string;
+    ayahs: { numberInSurah: number; text: string }[];
+  }[]) {
+    for (const a of s.ayahs) {
+      out.push({
+        key: `${s.number}-${a.numberInSurah}`,
+        text: a.text,
+        surahNumber: s.number,
+        surahName: s.name,
+        numberInSurah: a.numberInSurah,
+        norm: normalizeArabic(a.text),
+      });
+    }
+  }
+  quranIndex = out;
+  return out;
+}
+
+export async function searchAyahs(q: string): Promise<SearchHit[]> {
+  const term = normalizeArabic(q);
+  if (term.length < 2) return [];
+  const index = await loadQuranIndex();
+  return index.filter((a) => a.norm.includes(term)).slice(0, 80);
 }
 
 const pad = (n: number, len = 3) => String(n).padStart(len, "0");
