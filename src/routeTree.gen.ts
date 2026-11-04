@@ -14,9 +14,12 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AzkarRouteImport } from './routes/azkar'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as DuasRouteImport } from './routes/duas'
 import { Route as HadithRouteImport } from './routes/hadith'
 import { Route as PrayerRouteImport } from './routes/prayer'
+import { Route as QiblaRouteImport } from './routes/qibla'
 import { Route as QuranRouteImport } from './routes/quran'
+import { Route as QuranIndexRouteImport } from './routes/quran-index'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as TasbihRouteImport } from './routes/tasbih'
@@ -46,6 +49,11 @@ const CommunityRoute = CommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DuasRoute = DuasRouteImport.update({
+  id: '/duas',
+  path: '/duas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HadithRoute = HadithRouteImport.update({
   id: '/hadith',
   path: '/hadith',
@@ -56,9 +64,19 @@ const PrayerRoute = PrayerRouteImport.update({
   path: '/prayer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QiblaRoute = QiblaRouteImport.update({
+  id: '/qibla',
+  path: '/qibla',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuranRoute = QuranRouteImport.update({
   id: '/quran',
   path: '/quran',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuranIndexRoute = QuranIndexRouteImport.update({
+  id: '/quran-index',
+  path: '/quran-index',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedRoute = SavedRouteImport.update({
@@ -83,9 +101,12 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/azkar': typeof AzkarRoute
   '/community': typeof CommunityRoute
+  '/duas': typeof DuasRoute
   '/hadith': typeof HadithRoute
   '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/quran': typeof QuranRoute
+  '/quran-index': typeof QuranIndexRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
   '/tasbih': typeof TasbihRoute
@@ -96,9 +117,12 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/azkar': typeof AzkarRoute
   '/community': typeof CommunityRoute
+  '/duas': typeof DuasRoute
   '/hadith': typeof HadithRoute
   '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/quran': typeof QuranRoute
+  '/quran-index': typeof QuranIndexRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
   '/tasbih': typeof TasbihRoute
@@ -110,9 +134,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/azkar': typeof AzkarRoute
   '/community': typeof CommunityRoute
+  '/duas': typeof DuasRoute
   '/hadith': typeof HadithRoute
   '/prayer': typeof PrayerRoute
+  '/qibla': typeof QiblaRoute
   '/quran': typeof QuranRoute
+  '/quran-index': typeof QuranIndexRoute
   '/saved': typeof SavedRoute
   '/settings': typeof SettingsRoute
   '/tasbih': typeof TasbihRoute
@@ -125,9 +152,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/azkar'
     | '/community'
+    | '/duas'
     | '/hadith'
     | '/prayer'
+    | '/qibla'
     | '/quran'
+    | '/quran-index'
     | '/saved'
     | '/settings'
     | '/tasbih'
@@ -138,9 +168,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/azkar'
     | '/community'
+    | '/duas'
     | '/hadith'
     | '/prayer'
+    | '/qibla'
     | '/quran'
+    | '/quran-index'
     | '/saved'
     | '/settings'
     | '/tasbih'
@@ -151,9 +184,12 @@ export interface FileRouteTypes {
     | '/auth'
     | '/azkar'
     | '/community'
+    | '/duas'
     | '/hadith'
     | '/prayer'
+    | '/qibla'
     | '/quran'
+    | '/quran-index'
     | '/saved'
     | '/settings'
     | '/tasbih'
@@ -165,9 +201,12 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   AzkarRoute: typeof AzkarRoute
   CommunityRoute: typeof CommunityRoute
+  DuasRoute: typeof DuasRoute
   HadithRoute: typeof HadithRoute
   PrayerRoute: typeof PrayerRoute
+  QiblaRoute: typeof QiblaRoute
   QuranRoute: typeof QuranRoute
+  QuranIndexRoute: typeof QuranIndexRoute
   SavedRoute: typeof SavedRoute
   SettingsRoute: typeof SettingsRoute
   TasbihRoute: typeof TasbihRoute
@@ -210,6 +249,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/duas': {
+      id: '/duas'
+      path: '/duas'
+      fullPath: '/duas'
+      preLoaderRoute: typeof DuasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hadith': {
       id: '/hadith'
       path: '/hadith'
@@ -224,11 +270,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrayerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/qibla': {
+      id: '/qibla'
+      path: '/qibla'
+      fullPath: '/qibla'
+      preLoaderRoute: typeof QiblaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/quran': {
       id: '/quran'
       path: '/quran'
       fullPath: '/quran'
       preLoaderRoute: typeof QuranRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quran-index': {
+      id: '/quran-index'
+      path: '/quran-index'
+      fullPath: '/quran-index'
+      preLoaderRoute: typeof QuranIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saved': {
@@ -261,9 +321,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   AzkarRoute: AzkarRoute,
   CommunityRoute: CommunityRoute,
+  DuasRoute: DuasRoute,
   HadithRoute: HadithRoute,
   PrayerRoute: PrayerRoute,
+  QiblaRoute: QiblaRoute,
   QuranRoute: QuranRoute,
+  QuranIndexRoute: QuranIndexRoute,
   SavedRoute: SavedRoute,
   SettingsRoute: SettingsRoute,
   TasbihRoute: TasbihRoute,
@@ -271,3 +334,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
