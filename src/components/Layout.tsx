@@ -15,6 +15,7 @@ import {
   Users,
   Star,
   Settings,
+  Compass,
 } from "lucide-react";
 import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
@@ -25,7 +26,10 @@ const navItems = [
   { to: "/", label: "الرئيسية", icon: Home },
   { to: "/quran", label: "المصحف الكامل", icon: BookOpen },
   { to: "/prayer", label: "مواقيت الصلاة", icon: Clock },
-  { to: "/azkar", label: "الأذكار وحصن المسلم", icon: Heart },
+  { to: "/azkar", label: "الأذكار", icon: Heart },
+  { to: "/duas", label: "الأدعية", icon: Star },
+  { to: "/quran-index", label: "فهرس المصحف", icon: Star },
+  { to: "/qibla", label: "اتجاه القبلة", icon: Compass },
   { to: "/tasbih", label: "السبحة", icon: CircleDot },
   { to: "/hadith", label: "مكتبة الأحاديث", icon: ScrollText },
   { to: "/community", label: "مجتمع أمّتي", icon: Users },
