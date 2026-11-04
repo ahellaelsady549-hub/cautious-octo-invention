@@ -119,7 +119,7 @@ function QuranPage() {
   const [reciter, setReciter] = useState(reciters[0]?.folder ?? "Minshawy_Murattal_128kbps");
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [playKey, setPlayKey] = useState<number | null>(null);
-  const [fontScale, setFontScale] = useState(1.55);
+  const [fontScale, setFontScale] = useState(1.7);
   useEffect(() => {
     const f = Number(localStorage.getItem("ummah:mushaf-font"));
     if (f >= 1 && f <= 2.6) setFontScale(f);
@@ -622,12 +622,13 @@ function QuranPage() {
               </div>
 
               <div
-                className={expanded ? "fixed inset-0 z-[60] flex flex-col bg-background animate-fade-up" : ""}
+                className={expanded ? "fixed inset-0 z-[60] flex flex-col mushaf-ambient animate-fade-up" : ""}
                 role={expanded ? "dialog" : undefined}
                 aria-label={expanded ? "وضع القراءة الموسّع" : undefined}
               >
                 {expanded && (
-                  <div className="flex items-center justify-between gap-2 border-b border-border bg-card/90 px-3 py-2 backdrop-blur">
+                  <>
+                   <div className="flex items-center justify-between gap-2 mushaf-topbar px-3 py-2">
                     <button
                       onClick={() => setExpanded(false)}
                       className="inline-flex items-center gap-1 rounded-full border border-gold/40 px-3 py-1.5 text-xs text-gold"
@@ -647,10 +648,23 @@ function QuranPage() {
                       </button>
                     </div>
                     <div className="flex items-center gap-1 text-xs">
-                      <button onClick={() => changeFont(-0.1)} className="rounded-full border border-border px-2.5 py-1" aria-label="تصغير الخط">أ−</button>
-                      <button onClick={() => changeFont(0.1)} className="rounded-full border border-border px-2.5 py-1" aria-label="تكبير الخط">أ+</button>
+                      <button onClick={() => changeFont(-0.1)} className="rounded-full border border-gold/40 px-2.5 py-1 text-gold" aria-label="تصغير الخط">أ−</button>
+                      <button onClick={() => changeFont(0.1)} className="rounded-full border border-gold/40 px-2.5 py-1 text-gold" aria-label="تكبير الخط">أ+</button>
                     </div>
                   </div>
+                  <div className="mushaf-topbar flex items-center gap-2 border-t px-4 pb-2 pt-1">
+                      <input
+                        type="range"
+                        min={1}
+                        max={rangeMax}
+                        value={rangeIndex}
+                        onChange={(e) => setRangeIndex(Number(e.target.value))}
+                        className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-gold/25 accent-gold"
+                        aria-label={`الانتقال السريع بين الصفحات (${rangeLabel})`}
+                      />
+                      <span className="min-w-10 text-center text-xs tabular-nums text-gold">{rangeIndex.toLocaleString("ar-EG")}</span>
+                    </div>
+                  )}
                 )}
                 <div ref={readerScrollRef} className={expanded ? "flex-1 overflow-y-auto px-2 py-4 sm:px-6" : ""}>
               <div className={`relative [perspective:1800px] ${expanded ? "mx-auto max-w-3xl" : "mt-6"}`}>
