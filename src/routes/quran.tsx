@@ -665,7 +665,7 @@ function QuranPage() {
                       <span className="min-w-10 text-center text-xs tabular-nums text-gold">{rangeIndex.toLocaleString("ar-EG")}</span>
                     </div>
                   </>
-                  )}
+                )}
                 <div ref={readerScrollRef} className={expanded ? "flex-1 overflow-y-auto px-2 py-4 sm:px-6" : ""}>
               <div className={`relative [perspective:1800px] ${expanded ? "mx-auto max-w-3xl" : "mt-6"}`}>
                 {/* حواف الصفحات خلف الصفحة */}
