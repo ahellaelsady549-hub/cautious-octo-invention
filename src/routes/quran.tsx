@@ -40,6 +40,7 @@ import {
   type Quality,
 } from "@/lib/quran";
 import { useAuth } from "@/lib/auth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import mushafPaper from "@/assets/mushaf-paper.jpg";
@@ -91,6 +92,7 @@ const modes: { key: Mode; label: string }[] = [
 
 function QuranPage() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [surahNo, setSurahNo] = useState(1);
   const [mode, setMode] = useState<Mode>("page");
   const [page, setPage] = useState(1);
@@ -120,6 +122,8 @@ function QuranPage() {
   const [playingAyah, setPlayingAyah] = useState<number | null>(null);
   const [playKey, setPlayKey] = useState<number | null>(null);
   const [fontScale, setFontScale] = useState(1.7);
+  const [fitFontScale, setFitFontScale] = useState(1.7);
+  const quranTextRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
     const f = Number(localStorage.getItem("ummah:mushaf-font"));
     if (f >= 1 && f <= 2.6) setFontScale(f);
@@ -165,6 +169,57 @@ function QuranPage() {
       }
     };
   }, [expanded]);
+  useEffect(() => {
+    if (!expanded || !isMobile || mode === "surah") {
+      setFitFontScale(fontScale);
+      return;
+    }
+
+    const textElement = quranTextRef.current;
+    if (!textElement) return;
+
+    let frame = 0;
+    let active = true;
+    const fitText = () => {
+      if (!active) return;
+      const availableHeight = textElement.clientHeight;
+      if (availableHeight < 1) return;
+      textElement.style.fontSize = `${fontScale}rem`;
+      const previousFlex = textElement.style.flex;
+      const previousHeight = textElement.style.height;
+      const previousOverflow = textElement.style.overflow;
+      textElement.style.flex = "none";
+      textElement.style.height = "auto";
+      textElement.style.overflow = "visible";
+      const contentHeight = textElement.scrollHeight;
+      textElement.style.flex = previousFlex;
+      textElement.style.height = previousHeight;
+      textElement.style.overflow = previousOverflow;
+      if (contentHeight <= availableHeight + 2) {
+        setFitFontScale((current) => (Math.abs(current - fontScale) > 0.01 ? fontScale : current));
+        return;
+      }
+      const nextScale = Math.max(0.82, Math.min(fontScale, fontScale * (availableHeight / contentHeight) * 0.97));
+      setFitFontScale((current) => (Math.abs(current - nextScale) > 0.01 ? nextScale : current));
+    };
+    const scheduleFit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(fitText);
+    };
+    const observer = new ResizeObserver(scheduleFit);
+    const contentObserver = new MutationObserver(scheduleFit);
+    observer.observe(textElement);
+    contentObserver.observe(textElement, { childList: true, characterData: true, subtree: true });
+    frame = requestAnimationFrame(() => requestAnimationFrame(fitText));
+    void document.fonts.ready.then(scheduleFit);
+
+    return () => {
+      active = false;
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      contentObserver.disconnect();
+    };
+  }, [expanded, fontScale, isMobile, mode, page, juz, hizb]);
   const [continuous, setContinuous] = useState(true);
   const [ward, setWard] = useState<Ward>(loadWard);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -666,8 +721,8 @@ function QuranPage() {
                     </div>
                   </>
                 )}
-                <div ref={readerScrollRef} className={expanded ? "flex-1 overflow-y-auto px-2 py-4 sm:px-6" : ""}>
-              <div className={`relative [perspective:1800px] ${expanded ? "mx-auto max-w-3xl" : "mt-6"}`}>
+                <div ref={readerScrollRef} className={expanded ? "min-h-0 flex-1 overflow-hidden px-2 py-1 sm:px-6" : ""}>
+              <div className={`relative [perspective:1800px] ${expanded ? "mx-auto h-full min-h-0 max-w-3xl" : "mt-6"}`}>
                 {/* حواف الصفحات خلف الصفحة */}
                 <div className="absolute inset-0 translate-x-1.5 translate-y-1.5 rounded-md border border-mushaf-accent/30 bg-mushaf-paper" />
                 <div className="absolute inset-0 translate-x-0.5 translate-y-0.5 rounded-md border border-mushaf-accent/30 bg-mushaf-paper" />
@@ -681,12 +736,12 @@ function QuranPage() {
                     setTouchX(null);
                   }}
                   className={`mushaf-paper relative rounded-md p-1.5 sm:p-2 ${
-                    expanded ? "min-h-[calc(100dvh-6rem)]" : "min-h-[70vh]"
+                    expanded ? "h-full min-h-0 overflow-hidden" : "min-h-[70vh]"
                   } ${flipDir === "next" ? "animate-page-next" : "animate-page-prev"}`}
                 >
                   <img src={mushafPaper} alt="" aria-hidden="true" width={1024} height={1024} className="mushaf-texture pointer-events-none absolute inset-0 h-full w-full rounded-md object-cover" />
-                  <div className="mushaf-frame relative h-full px-3 py-3 sm:px-8 sm:py-6">
-                    <div className="mb-3 flex items-center justify-between gap-2 border-b border-mushaf-accent/25 pb-2 text-[11px] text-mushaf-accent sm:text-xs">
+                  <div className={`mushaf-frame relative h-full px-3 py-3 sm:px-8 sm:py-6 ${expanded ? "flex min-h-0 flex-col" : ""}`}>
+                    <div className={`mb-3 flex items-center justify-between gap-2 border-b border-mushaf-accent/25 pb-2 text-[11px] text-mushaf-accent sm:text-xs ${expanded ? "shrink-0" : ""}`}>
                       <span className="font-bold">{rangeAyahs?.[0]?.juz ? `الجزء ${rangeAyahs[0].juz.toLocaleString("ar-EG")}` : `${rangeLabel} ${rangeIndex}`}</span>
                       <span className="flex items-center gap-2">
                         {mode === "page" && (
@@ -715,10 +770,11 @@ function QuranPage() {
                       </div>
                     )}
                     <div
-                      className="quran-text mushaf-script text-justify text-mushaf-ink [text-align-last:center]"
+                      ref={quranTextRef}
+                      className={`quran-text mushaf-script text-justify text-mushaf-ink [text-align-last:center] ${expanded ? "min-h-0 flex-1 overflow-hidden" : ""}`}
                       dir="rtl"
                       lang="ar"
-                      style={{ fontSize: `${fontScale}rem` }}
+                      style={{ fontSize: `${expanded && isMobile ? fitFontScale : fontScale}rem`, ...(expanded && isMobile ? { lineHeight: 1.65 } : {}) }}
                     >
                       {rangeAyahs?.map((a) => (
                         <span key={a.number}>
@@ -749,7 +805,7 @@ function QuranPage() {
                         </span>
                       ))}
                     </div>
-                    <div className="mt-4 flex items-center justify-center gap-2 text-xs text-mushaf-accent">
+                    <div className={`mt-4 flex items-center justify-center gap-2 text-xs text-mushaf-accent ${expanded ? "shrink-0" : ""}`}>
                       <span className="h-px w-8 bg-mushaf-accent/40" />
                       {rangeIndex.toLocaleString("ar-EG")}
                       <span className="h-px w-8 bg-mushaf-accent/40" />
